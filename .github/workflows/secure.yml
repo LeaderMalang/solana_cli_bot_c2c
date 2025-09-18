@@ -1,0 +1,12 @@
+# .github/workflows/secure.yml
+name: security-basics
+on: [pull_request, push]
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+      - name: Basic shellcheck for scripts (if any)
+        uses: ludeeus/action-shellcheck@2.0.0
