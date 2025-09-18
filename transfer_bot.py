@@ -14,7 +14,7 @@ from decimal import Decimal
 import re
 from typing import List
 
-from utils import load_config, ensure_csv, append_row, run_cmd, log_error
+from utils import load_config, ensure_csv, append_row, run_cmd, log_error,reject_secrets_in_config,sanitize_csv_cell
 
 DEVNET_URL = "https://api.devnet.solana.com"
 
@@ -50,6 +50,7 @@ def main() -> int:
 
     try:
         cfg = load_config(config_path)
+        reject_secrets_in_config(cfg)
         from_wallet = cfg.get("wallet_pubkey")  # for logging only
         mint = cfg.get("token_mint")
         to_wallet = cfg.get("recipient_wallet")
@@ -85,7 +86,7 @@ def main() -> int:
 
         sig = extract_signature(proc.stdout)
         ts = datetime.now(timezone.utc).isoformat()
-        append_row(transfers_csv, [from_wallet, to_wallet, amount_str, sig, ts])
+        append_row(transfers_csv, [sanitize_csv_cell(from_wallet), sanitize_csv_cell(to_wallet), amount_str, sig, ts])
 
         print("Transfer OK")
         if sig:

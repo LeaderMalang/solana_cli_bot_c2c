@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 import csv
 from typing import List
 
-from utils import load_config, ensure_csv, append_row, run_cmd, log_error
+from utils import load_config, ensure_csv, append_row, run_cmd, log_error,reject_secrets_in_config,sanitize_csv_cell
 
 DEVNET_URL = "https://api.devnet.solana.com"
 
@@ -46,6 +46,7 @@ def main() -> int:
 
     try:
         cfg = load_config(config_path)
+        reject_secrets_in_config(cfg)
         wallet = args.wallet or cfg.get("wallet_pubkey")
         if not wallet:
             raise KeyError("wallet_pubkey not provided via --wallet or config.json")
@@ -69,7 +70,7 @@ def main() -> int:
             return 2
 
         ts = datetime.now(timezone.utc).isoformat()
-        append_row(balance_csv, [wallet, ts, bal])
+        append_row(balance_csv, [sanitize_csv_cell(wallet), ts, bal])
         print(f"Wallet: {wallet} | Balance: {bal} SOL | Time: {ts}")
         return 0
 

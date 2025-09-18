@@ -7,6 +7,21 @@ from pathlib import Path
 from datetime import datetime, timezone
 from typing import List
 
+
+
+# ignore obviously secret-like keys in config.json
+FORBIDDEN_KEYS = ("PRIVATE_KEY", "MNEMONIC", "SEED", "KEYPAIR")
+
+def reject_secrets_in_config(cfg: dict):
+    text = json.dumps(cfg).upper()
+    for bad in FORBIDDEN_KEYS:
+        if bad in text:
+            raise ValueError("Config contains secret-like fields; remove sensitive data.")
+
+def sanitize_csv_cell(s: str) -> str:
+    # Prevent CSV/formula injection
+    return "'" + s if s and s[0] in "=+-@" else s
+
 def load_config(path: Path) -> dict:
     if not path.exists():
         raise FileNotFoundError(f"config file not found: {path}")
